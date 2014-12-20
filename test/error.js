@@ -23,7 +23,7 @@ interleave.test(function (async) {
         err1 = err
         done()
       }),
-      pull.collect(function () {
+      pull.collect(function (err) {
         err2 = err
         done()
       })

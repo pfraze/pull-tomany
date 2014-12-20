@@ -6,15 +6,17 @@
 //continue to write to the other stream.
 
 module.exports = function (sinks) {
-  var running = 0, open = false, ended, reading
+  var running = 0, totalreads = 0, open = false, ended, reading
   var readFn
   var cbs     = new Array(sinks.length)
   var queues  = new Array(sinks.length)
   var aborted = new Array(sinks.length)
+  var nreads  = new Array(sinks.length)
 
   function init (key, reader) {
     running ++
     queues[key] = []
+    nreads[key] = []
     reader(function (abort, cb) {
       if(abort) {
         aborted[key] = abort
@@ -29,9 +31,10 @@ module.exports = function (sinks) {
 
       if(queues[key].length) {
         if(aborted[key]) return
+          nreads[key]++
         cb(null, queues[key].shift())
       }
-      else if(ended) {
+      else if(ended && nreads[key] == totalreads) {
         return cb(ended)
       }
       else {
@@ -47,7 +50,7 @@ module.exports = function (sinks) {
   // ends any sinks that have CBs queued
   function endAll () {
     for(var k in cbs) {
-      if(cbs[k]) {
+      if(cbs[k] && nreads[k] == totalreads) {
         var cb = cbs[k]
         cbs[k] = null
         cb (ended)
@@ -60,21 +63,23 @@ module.exports = function (sinks) {
     reading = true
     readFn(abort, function (end, data) {
       reading = false
-      if(end) {
+      if (end) {
         ended = end
         return endAll()
       }
+      totalreads++
 
-      for (var i=0; i < cbs.length; i++) {
-        var cb = cbs[i]
+      for (var k in cbs) {
+        var cb = cbs[k]
         // is a callback ready?
         if (cb) {
           // send along
-          cbs[i] = null
+          cbs[k] = null
+          nreads[k]++
           cb(null, data)
         } else {
           // put on that sink's queue
-          queues[i].push(data)
+          queues[k].push(data)
         }
       }
     })
