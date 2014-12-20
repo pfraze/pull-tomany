@@ -59,7 +59,7 @@ function error (err) {
   function done(err, ary) {
     if(--n) return
     assert.deepEqual(ary1, [1,2,3,4,5,6,7,8])
-    assert.equal(ary2.length, 1)
+    assert.deepEqual(ary2, [1])
     assert.ok(aborted2)
     if(!aborted2 || !ary1)
       throw new Error('test failed')

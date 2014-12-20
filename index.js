@@ -31,7 +31,7 @@ module.exports = function (sinks) {
 
       if(queues[key].length) {
         if(aborted[key]) return
-          nreads[key]++
+        nreads[key]++
         cb(null, queues[key].shift())
       }
       else if(ended && nreads[key] == totalreads) {
@@ -69,17 +69,18 @@ module.exports = function (sinks) {
       }
       totalreads++
 
+      // queue the data first, to ensure same delivery order to all
+      for (var k in cbs)
+        queues[k].push(data)
+
       for (var k in cbs) {
         var cb = cbs[k]
         // is a callback ready?
-        if (cb) {
+        if (cb && queues[k].length) {
           // send along
           cbs[k] = null
           nreads[k]++
-          cb(null, data)
-        } else {
-          // put on that sink's queue
-          queues[k].push(data)
+          cb(null, queues[k].shift())
         }
       }
     })
