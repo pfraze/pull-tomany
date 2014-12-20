@@ -1,0 +1,22 @@
+{
+  "name": "pull-tomany",
+  "description": "duplicate a pull-stream to many sinks",
+  "version": "1.0.0",
+  "homepage": "https://github.com/pfraze/pull-tomany",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pfraze/pull-tomany.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "interleavings": "^0.2.3",
+    "pull-cat": "^1.1.5",
+    "pull-stream": "^2.23.0",
+    "tape": "~2.13.2"
+  },
+  "scripts": {
+    "test": "set -e; for t in test/*.js; do node $t; done"
+  },
+  "author": "Paul Frazee <pfrazee@gmail.com>",
+  "license": "MIT"
+}
